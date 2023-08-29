@@ -1,2 +1,2 @@
-# MiniMySQL-Database
+# Database
 A high-performance database written in C++
