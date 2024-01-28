@@ -1,0 +1,10 @@
+^C:\USERS\ONNES\DESKTOP\GIT\DATABASE\CMAKELISTS.TXT
+setlocal
+D:\Environment\Cmake\bin\cmake.exe -SC:/Users/onnes/Desktop/Git/DATABASE -BC:/Users/onnes/Desktop/Git/DATABASE/build --check-stamp-file C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

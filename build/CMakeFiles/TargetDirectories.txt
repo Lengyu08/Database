@@ -1,0 +1,3 @@
+C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/TrieExecutable.dir
+C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/ZERO_CHECK.dir
