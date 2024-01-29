@@ -1,0 +1,153 @@
+#include <iostream>    // 用于输入和输出流
+#include <map>         // 哈希表
+#include <memory>      // 智能指针
+#include <string_view> // 字符串视图, 避免不必要的字符串拷贝
+#include <utility>     // 包含一些实用工具
+#include <vector>      // 向量数组
+
+class TrieNode {
+public:
+    bool is_value_node{false};
+
+    std::map<char, std::shared_ptr<const TrieNode>> trie_map;
+
+    TrieNode() = default;
+
+    virtual ~TrieNode() = default;
+
+    explicit TrieNode(std::map<char, std::shared_ptr<const TrieNode>> input_map) :
+        trie_map(std::move(input_map)) {
+    }
+
+    virtual auto Clone() const -> std::unique_ptr<TrieNode> {
+        return std::make_unique<TrieNode>(trie_map);
+    }
+};
+
+template <class T>
+class TrieNodeWithValue : public TrieNode {
+public:
+    std::shared_ptr<T> trie_value;
+
+    explicit TrieNodeWithValue(std::shared_ptr<T> input_value) :
+        trie_value(std::move(input_value)) {
+        this->is_value_node = true;
+    }
+
+    TrieNodeWithValue(std::map<char, std::shared_ptr<const TrieNode>> input_map, std::shared_ptr<T> input_value) :
+        TrieNode(std::move(input_map)), trie_value(std::move(input_value)) {
+        this->is_value_node = true;
+    }
+
+    auto Clone() const -> std::unique_ptr<TrieNode> override {
+        return std::make_unique<TrieNodeWithValue<T>>(trie_map, trie_value);
+    }
+};
+
+class Trie {
+public:
+    std::shared_ptr<const TrieNode> trie_root{nullptr};
+
+    explicit Trie(std::shared_ptr<const TrieNode> input_root) :
+        trie_root(std::move(input_root)) {
+    }
+
+public:
+    Trie() = default;
+
+    //  template <class T>
+    //  auto Get(std::string_view key) const -> const T * {
+    //  }
+
+    template <class T>
+    auto Put(std::string_view key, T value) const -> Trie {
+        if (key.empty()) {
+            return Trie(trie_root);
+        }
+
+        std::shared_ptr<TrieNode> current_root = trie_root ? trie_root->Clone() : std::make_shared<TrieNode>();
+
+        std::shared_ptr<TrieNode> node = current_root;
+
+        for (unsigned int i = 0; i < key.size(); i++) {
+            if (i == key.size() - 1) {
+                // if (node->trie_map.find(key[i]) != node->trie_map.end()) {
+                //     std::cout << "node is exist" << std::endl;
+                //     if (node->is_value_node) {
+                //         std::cout << "node's is a value node" << std::endl;
+                //         // copy the new node
+                //     } else {
+                //         std::cout << "node's is not a value node" << std::endl;
+                //         // new a value node and get the old node's all pointer
+                //     }
+                // } else {
+                //     std::cout << "node is not exist" << std::endl;
+                    std::shared_ptr<T> value_ptr = std::make_shared<T>(value);
+                    std::shared_ptr<TrieNode> new_node = std::make_shared<TrieNodeWithValue<T>>(value_ptr);
+                    if (node->trie_map.find(key[i]) != node->trie_map.end()) {
+                        node->trie_map.erase(key[i]);
+                    }
+                    node->trie_map.emplace(key[i], new_node);
+                    node = new_node;
+                // }
+                break;
+            }
+
+            if (node->trie_map.find(key[i]) != node->trie_map.end()) {
+                node = node->trie_map.at(key[i])->Clone();
+            } else {
+                std::cout << "Input : " << key[i] << " in map is not found" << std::endl;
+                std::shared_ptr<TrieNode> new_node = std::make_shared<TrieNode>();
+                node->trie_map.emplace(key[i], new_node);
+                // if (key[i] == 'l') {
+                //     // 断开映射
+                //     node->trie_map.erase('l');
+                // }
+                node = new_node;
+            }
+        }
+
+        return Trie(current_root);
+    }
+
+    auto printTrieNode(std::string key) -> void {
+        std::shared_ptr<TrieNode> node = trie_root->Clone();
+        for (const char &c : key) {
+            std::cout << "char: " << c;
+            if (node->trie_map.find(c) != node->trie_map.end()) {
+                node = node->trie_map.at(c)->Clone(); // 切换到下一个节点
+            } else {
+                std::cout << " is not found!" << std::endl;
+                break;
+            }
+
+            if (node->is_value_node) {
+                auto value_node = std::dynamic_pointer_cast<TrieNodeWithValue<std::string>>(node);
+                std::cout << "'s value is " << *(value_node->trie_value) << std::endl;
+            } else {
+                std::cout << " is not value node" << std::endl;
+            }
+        }
+    }
+
+    // auto Remove(std::string_view key) const -> Trie {
+    // }
+};
+
+auto main(int argc, char **argv) -> int {
+    auto trie = Trie();
+
+    std::string key = "hello";
+    std::cout << "Strat to put " << key << std::endl;
+    trie = trie.Put(key, key);
+    trie.printTrieNode("hello");
+
+    std::cout << std::endl;
+
+    key = "he";
+    std::cout << "Strat to put " << key << std::endl;
+    trie = trie.Put(key, key);
+    trie.printTrieNode("hello");
+
+    return 0;
+}
