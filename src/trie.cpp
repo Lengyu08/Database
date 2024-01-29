@@ -71,38 +71,34 @@ public:
 
         for (unsigned int i = 0; i < key.size(); i++) {
             if (i == key.size() - 1) {
-                // if (node->trie_map.find(key[i]) != node->trie_map.end()) {
-                //     std::cout << "node is exist" << std::endl;
-                //     if (node->is_value_node) {
-                //         std::cout << "node's is a value node" << std::endl;
-                //         // copy the new node
-                //     } else {
-                //         std::cout << "node's is not a value node" << std::endl;
-                //         // new a value node and get the old node's all pointer
-                //     }
-                // } else {
-                //     std::cout << "node is not exist" << std::endl;
-                    std::shared_ptr<T> value_ptr = std::make_shared<T>(value);
-                    std::shared_ptr<TrieNode> new_node = std::make_shared<TrieNodeWithValue<T>>(value_ptr);
-                    if (node->trie_map.find(key[i]) != node->trie_map.end()) {
-                        node->trie_map.erase(key[i]);
+                std::shared_ptr<T> value_ptr = std::make_shared<T>(value);
+                std::shared_ptr<TrieNode> new_node = std::make_shared<TrieNodeWithValue<T>>(value_ptr);
+
+                if (node->trie_map.find(key[i]) != node->trie_map.end()) {
+                    for (const auto &pair : node->trie_map.at(key[i])->trie_map) {
+                        std::cout << "connet the old map's char: " << pair.first << std::endl;
+                        new_node->trie_map.emplace(pair.first, pair.second->Clone());
                     }
-                    node->trie_map.emplace(key[i], new_node);
-                    node = new_node;
-                // }
+                    node->trie_map.erase(key[i]);   
+                }
+
+                std::cout << node->is_value_node << std::endl;
+                node->trie_map.emplace(key[i], new_node);
+                node = new_node;
+                std::cout << node->is_value_node << std::endl;
                 break;
             }
 
             if (node->trie_map.find(key[i]) != node->trie_map.end()) {
-                node = node->trie_map.at(key[i])->Clone();
+                // node = node->trie_map.at(key[i])->Clone();
+                std::shared_ptr<TrieNode> new_node = node->trie_map.at(key[i])->Clone();
+                node->trie_map.erase(key[i]);
+                node->trie_map.emplace(key[i], new_node);
+                node = new_node;
             } else {
-                std::cout << "Input : " << key[i] << " in map is not found" << std::endl;
+                // std::cout << "Input : " << key[i] << " in map is not found" << std::endl;
                 std::shared_ptr<TrieNode> new_node = std::make_shared<TrieNode>();
                 node->trie_map.emplace(key[i], new_node);
-                // if (key[i] == 'l') {
-                //     // 断开映射
-                //     node->trie_map.erase('l');
-                // }
                 node = new_node;
             }
         }
@@ -110,8 +106,8 @@ public:
         return Trie(current_root);
     }
 
-    auto printTrieNode(std::string key) -> void {
-        std::shared_ptr<TrieNode> node = trie_root->Clone();
+    auto printTrieNode(std::string key, std::shared_ptr<const TrieNode> current_root) -> void {
+        std::shared_ptr<TrieNode> node = current_root->Clone();
         for (const char &c : key) {
             std::cout << "char: " << c;
             if (node->trie_map.find(c) != node->trie_map.end()) {
@@ -140,14 +136,25 @@ auto main(int argc, char **argv) -> int {
     std::string key = "hello";
     std::cout << "Strat to put " << key << std::endl;
     trie = trie.Put(key, key);
-    trie.printTrieNode("hello");
+    trie.printTrieNode("hello", trie.trie_root);
+
+    std::cout << std::endl;
+
+    key = "h";
+    std::cout << "Strat to put " << key << std::endl;
+    trie = trie.Put(key, key);
+    trie.printTrieNode("hello", trie.trie_root);
 
     std::cout << std::endl;
 
     key = "he";
     std::cout << "Strat to put " << key << std::endl;
     trie = trie.Put(key, key);
-    trie.printTrieNode("hello");
+    trie.printTrieNode("hello", trie.trie_root);
 
+    std::string new_key = "new";
+    std::cout << "Strat to put " << new_key << std::endl;
+    trie = trie.Put(key, new_key); 
+    trie.printTrieNode("hello", trie.trie_root);
     return 0;
 }
