@@ -1,2 +1,0 @@
-C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/edit_cache.dir
-C:/Users/onnes/Desktop/Git/DATABASE/build/CMakeFiles/rebuild_cache.dir
