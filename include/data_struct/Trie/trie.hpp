@@ -69,7 +69,7 @@ public:
 
         for (const char &c : key) {
             if (node->trie_map.find(c) != node->trie_map.end()) {
-                node = node->trie_map.at(c)->Clone(); // 切换到下一个节点
+                node = node->trie_map.at(c)->Clone();
             } else {
                 return nullptr;
             }
@@ -97,22 +97,27 @@ public:
         for (unsigned int i = 0; i < key.size(); i++) {
             std::shared_ptr<TrieNode> new_node;
             if (i == key.size() - 1) {
-                std::shared_ptr<T> value_ptr = std::make_shared<T>(value);
+                std::shared_ptr<T> value_ptr = std::make_shared<T>(std::move(value));
+
                 new_node = std::make_shared<TrieNodeWithValue<T>>(value_ptr);
 
                 if (node->trie_map.find(key[i]) != node->trie_map.end()) {
                     for (const auto &pair : node->trie_map.at(key[i])->trie_map) {
                         new_node->trie_map.emplace(pair.first, pair.second->Clone());
                     }
+
                     node->trie_map.erase(key[i]);
                 }
             } else if (node->trie_map.find(key[i]) != node->trie_map.end()) {
                 new_node = node->trie_map.at(key[i])->Clone();
+
                 node->trie_map.erase(key[i]);
             } else {
                 new_node = std::make_shared<TrieNode>();
             }
+
             node->trie_map.emplace(key[i], new_node);
+
             node = new_node;
         }
 
@@ -131,6 +136,7 @@ public:
 
         for (unsigned int i = 0; i < key.size(); i++) {
             std::shared_ptr<TrieNode> new_node;
+
             if (i == key.size() - 1) {
                 new_node = std::make_shared<TrieNode>();
 
@@ -140,16 +146,40 @@ public:
                     }
                     node->trie_map.erase(key[i]);
                 }
+
             } else if (node->trie_map.find(key[i]) != node->trie_map.end()) {
                 new_node = node->trie_map.at(key[i])->Clone();
+
                 node->trie_map.erase(key[i]);
             } else {
                 new_node = std::make_shared<TrieNode>();
             }
+
             node->trie_map.emplace(key[i], new_node);
             node = new_node;
         }
 
         return Trie(current_root);
+    }
+
+    template <class T>
+    auto PrintTrieTree(std::string &key) -> void {
+        std::shared_ptr<TrieNode> node = trie_root->Clone();
+        for (const char &c : key) {
+            std::cout << "char: " << c;
+            if (node->trie_map.find(c) != node->trie_map.end()) {
+                node = node->trie_map.at(c)->Clone(); // 切换到下一个节点
+            } else {
+                std::cout << " is not found!" << std::endl;
+                break;
+            }
+
+            if (node->is_value_node && std::dynamic_pointer_cast<TrieNodeWithValue<T>>(node) != nullptr) {
+                auto value_node = std::static_pointer_cast<const TrieNodeWithValue<T>>(node);
+                std::cout << "'s value is " << *(value_node->trie_value) << std::endl;
+            } else {
+                std::cout << " is not value node" << std::endl;
+            }
+        }
     }
 };

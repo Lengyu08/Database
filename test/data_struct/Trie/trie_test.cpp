@@ -4,6 +4,8 @@
 
 #include "../../../include/data_struct/Trie/trie.hpp"
 
+using Integer = std::unique_ptr<uint32_t>;
+
 class MoveBlocked {
 public:
     // 构造函数，接受一个 std::future<int> 参数，使用 std::move 进行移动构造
@@ -67,28 +69,39 @@ int main(int argc, char **argv) {
     std::string string_value;
     std::uint32_t uint32_value;
     std::uint64_t uint64_value;
-    std::unique_ptr<u_int32_t> unique_ptr_uint32_value;
 
-    // Test 1
+    // Test 1 Basic Test
     key = "hello", string_value = "hello";
     TestTrie<std::string>(key, string_value, test_count);
 
-    // Test 2
-    key = "", string_value = "empty";
-    TestTrie<std::string>(key, string_value, test_count);
-
-    // Tets 3
-    key = "hello", uint32_value = 1;
-    trie.Put<std::uint32_t>(key, uint32_value);
-    key = "hell";
-    trie.Put<std::uint32_t>(key, uint32_value);
-    trie.Remove(key);
-
+    // Tets 2 Get Remove Put Mix Test
     std::cout << "TestTrie: " << (*test_count)++ << std::endl;
-    assert(trie.Get<std::uint32_t>(key) == nullptr);
-    key = "hello";
-    assert(trie.Get<std::uint32_t>(key) != nullptr);
 
-    // Tets 4
+    key = "test", uint32_value = 1, trie = trie.Put<std::uint32_t>(key, uint32_value);
+    key = "tes", uint32_value = 2, trie = trie.Put<std::uint32_t>(key, uint32_value);
+    key = "t", string_value = "t", trie = trie.Put<std::string>(key, string_value);
+
+    key = "tes";
+    trie = trie.Remove(key);
+
+    key = "test";
+    assert(trie.Get<std::uint32_t>(key) != nullptr);
+    assert(*trie.Get<std::uint32_t>(key) == 1);
+
+    key = "t";
+    assert(trie.Get<std::string>(key) != nullptr);
+    assert(*trie.Get<std::string>(key) == key);
+
+    trie = Trie();
+
+    assert(trie.Get<std::string>(key) == nullptr);
+
+    // Tets 3 unique_ptr Test write-on-copy
+    std::cout << "TestTrie: " << (*test_count)++ << std::endl;
+
+    trie = trie.Put<Integer>("test", std::make_unique<uint32_t>(233));
+    trie.Get<Integer>("test");
+    assert(trie.Get<Integer>("tes") == nullptr);
+
     return 0;
 }
