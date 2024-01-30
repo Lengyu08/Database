@@ -1,33 +1,32 @@
-#include <iostream>    // 用于输入和输出流
+#include <cassert>  // 用于断言
+#include <iostream> // 用于输入和输出流
 
 #include "../../../include/data_struct/Trie/trie.hpp"
 
 template <class T>
-auto TestTrie(std::string &key, T value) {
-    std::cout << "K : " << key << " V : " << value << std::endl;
+auto TestTrie(const std::string &key, const T &value, const T &assert_value, std::shared_ptr<int> test_count) -> void {
+    std::cout << "TestTrie: " << (*test_count)++ << std::endl;
 
     auto trie = Trie();
 
     trie = trie.Put(key, value);
 
-    if (trie.Get<T>(key) == nullptr) {
-        std::cout << "Null" << std::endl;
-    } else {
-        std::cout << "Value : " << *(trie.Get<T>(key)) << std::endl;
-    }
+    assert(trie.Get<T>(key) != nullptr && *trie.Get<T>(key) == assert_value);
 }
 
-auto main(int argc, char **argv) -> int {
+int main(int argc, char **argv) {
+    std::shared_ptr<int> test_count = std::make_shared<int>(0);
+
     std::string key;
     std::string string_value;
-    std::uint32_t uint32_value = 0;
-    std::uint64_t uint64_value = 0;
+    std::uint32_t uint32_value;
+    std::uint64_t uint64_value;
 
     key = "hello", string_value = "hello";
-    TestTrie(key, string_value);
+    TestTrie<std::string>(key, string_value, string_value, test_count);
 
     key = "", string_value = "empty";
-    TestTrie(key, string_value);
+    TestTrie<std::string>(key, string_value, string_value, test_count);
 
     return 0;
 }
